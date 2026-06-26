@@ -1,5 +1,7 @@
 export { ArticlePage } from './articlePage';
 
+export { CreateArticlePage } from './createArticlePage';
+
 export { EditorArticlePage } from './editorArticlePage';
 
 export { MainPage } from './mainPage';
@@ -10,4 +12,4 @@ export { AuthorizePage } from './authorizePage';
 
 export { LoginPage } from './loginPage';
 
-export { RootPage } from './rootPage';
+export { App } from './app';

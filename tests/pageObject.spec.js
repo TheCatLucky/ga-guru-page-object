@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 
-import { MainPage, EditorArticlePage, ArticlePage, UserProfilePage, AuthorizePage, LoginPage, RootPage } from '../../pages';
+import { MainPage, CreateArticlePage, EditorArticlePage, ArticlePage, UserProfilePage, AuthorizePage, LoginPage, App } from '../pages';
 
 const username = 'My test user';
 const email = 'testUserCassiooo@example.com';
@@ -9,53 +9,49 @@ const password = 'testPassword';
 const newUsername = 'Updated test user';
 const newArticleText = 'Новый текст';
 
-test.describe('Авторизованного пользователь может', () => {
+test.describe('Авторизованный пользователь может', () => {
   test.beforeEach(async ({ page }) => {
-    const mainPage = new MainPage({ page });
-    const loginPage = new LoginPage({ page });
-    const authorizePage = new AuthorizePage({ page });
+    const app = new App({ page });
 
-    await mainPage.gotoMainPage();
-    await mainPage.gotoLogin();
-    await loginPage.signIn({
+    await app.mainPage.gotoMainPage();
+    await app.mainPage.gotoLogin();
+    await app.loginPage.signIn({
       email,
       password
     });
   });
 
   test('изменить данные своего профиля', async ({ page }) => {
-    const authorizePage = new AuthorizePage({ page });
-    const userProfilePage = new UserProfilePage({ page });
+    const app = new App({ page });
 
-    await authorizePage.clickProfileDropdown();
-    await authorizePage.clickProfileLink();
+    await app.authorizePage.clickProfileDropdown();
+    await app.authorizePage.clickProfileLink();
 
-    await authorizePage.clickEditProfileButton();
+    await app.authorizePage.clickEditProfileButton();
 
-    await authorizePage.updateUsername(newUsername);
-    await authorizePage.updatePassword(password);
-    await authorizePage.saveProfileSettings();
+    await app.authorizePage.updateUsername(newUsername);
+    await app.authorizePage.updatePassword(password);
+    await app.authorizePage.saveProfileSettings();
 
-    await expect(await authorizePage.getProfileName()).toBe(newUsername);
+    await expect(await app.authorizePage.getProfileName()).toBe(newUsername);
 
-    await authorizePage.clickProfileDropdown();
-    await authorizePage.clickProfileLink();
-    await authorizePage.clickEditProfileButton();
-    await authorizePage.updateUsername(username);
-    await authorizePage.updatePassword(password);
-    await authorizePage.saveProfileSettings();
+    await app.authorizePage.clickProfileDropdown();
+    await app.authorizePage.clickProfileLink();
+    await app.authorizePage.clickEditProfileButton();
+    await app.authorizePage.updateUsername(username);
+    await app.authorizePage.updatePassword(password);
+    await app.authorizePage.saveProfileSettings();
   });
 
-  test.only('создать статью', async ({ page }) => {
-    const authorizePage = new AuthorizePage({ page });
-    const articlePage = new ArticlePage({ page });
-    const editorArticlePage = new EditorArticlePage({ page });
+  test('создать статью', async ({ page }) => {
+    const app = new App({ page });
 
-    const newArticlePath = await authorizePage.getNewArticlePath();
+    const createArticlePage = new CreateArticlePage({ page });
+    const newArticlePath = await app.authorizePage.getNewArticlePath();
 
-    await authorizePage.clickNewArticleLink();
+    await app.authorizePage.clickNewArticleLink();
 
-    await expect(page).toHaveURL(authorizePage.getBaseUrl() + newArticlePath);
+    await expect(page).toHaveURL(app.authorizePage.getBaseUrl() + newArticlePath);
 
     const article = {
       title: faker.lorem.sentence(5),
@@ -64,78 +60,77 @@ test.describe('Авторизованного пользователь може�
       tags: Array.from({ length: 3 }, () => faker.word.noun())
     };
 
-    await editorArticlePage.createNewArticle(article);
+    await app.createArticlePage.createNewArticle(article);
 
-    await expect(articlePage.getArticleHeading()).toContainText(article.title);
-    await expect(articlePage.getArticleContent()).toContainText(article.content);
+    await expect(app.articlePage.getArticleHeading()).toContainText(article.title);
+    await expect(app.articlePage.getArticleContent()).toContainText(article.content);
 
     for (const tag of article.tags) {
-      await expect(await articlePage.getTagList()).toContainText(tag);
+      await expect(await app.articlePage.getTagList()).toContainText(tag);
     }
   });
 
-  test('добавить и удалить статью из Избранного', async ({ page }) => {
-    const rootPage = new RootPage({ page });
-    const mainPage = new MainPage({ page });
-    const authorizePage = new AuthorizePage({ page });
-    const articlePage = new ArticlePage({ page });
+  test.describe('работать с статьей:', () => {
+    test.beforeEach(async ({ page }) => {
+      const app = new App({ page });
 
-    await rootPage.createNewArticle();
+      await app.authorizePage.clickNewArticleLink();
+      const article = {
+        title: faker.lorem.sentence(5),
+        description: faker.lorem.sentence(10),
+        content: faker.lorem.paragraphs(3),
+        tags: Array.from({ length: 3 }, () => faker.word.noun())
+      };
+      await app.createArticlePage.createNewArticle(article);
+    });
 
-    await mainPage.gotoMainPage();
+    test('добавить и удалить статью из Избранного', async ({ page }) => {
+      const app = new App({ page });
 
-    await authorizePage.openGlobalFeed();
+      await app.mainPage.gotoMainPage();
 
-    const addToFavorites = async () => {
-      await authorizePage.clickFirstAddToFavoritesButton();
+      await app.authorizePage.openGlobalFeed();
 
-      await expect(await authorizePage.getFirstAddToFavoritesButton()).toContainClass('active');
-      expect(
-        await authorizePage.getFirstAddToFavoritesButtonCount()
-      ).toBe(1);
-    };
+      const addToFavorites = async () => {
+        await app.authorizePage.clickFirstAddToFavoritesButton();
 
-    const deleteFromFavorites = async () => {
-      await authorizePage.clickFirstAddToFavoritesButton();
+        await expect(await app.authorizePage.getFirstAddToFavoritesButton()).toContainClass('active');
+        expect(
+          await app.authorizePage.getFirstAddToFavoritesButtonCount()
+        ).toBe(1);
+      };
 
-      await expect(await authorizePage.getFirstAddToFavoritesButton()).not.toContainClass('active');
-      expect(
-        await authorizePage.getFirstAddToFavoritesButtonCount()
-      ).toBe(0);
-    };
+      const deleteFromFavorites = async () => {
+        await app.authorizePage.clickFirstAddToFavoritesButton();
 
-    await addToFavorites();
-    await deleteFromFavorites();
-  });
+        await expect(await app.authorizePage.getFirstAddToFavoritesButton()).not.toContainClass('active');
+        expect(
+          await app.authorizePage.getFirstAddToFavoritesButtonCount()
+        ).toBe(0);
+      };
 
-  test('изменить статью', async ({ page }) => {
-    const rootPage = new RootPage({ page });
-    const authorizePage = new AuthorizePage({ page });
-    const userProfilePage = new UserProfilePage({ page });
-    const articlePage = new ArticlePage({ page });
-    const editorArticlePage = new EditorArticlePage({ page });
+      await addToFavorites();
+      await deleteFromFavorites();
+    });
 
-    await rootPage.createNewArticle();
+    test('изменить статью', async ({ page }) => {
+      const app = new App({ page });
 
-    await articlePage.startEditArticle();
+      await app.articlePage.startEditArticle();
 
-    await editorArticlePage.changeArticleText(newArticleText);
-    await editorArticlePage.saveArticle();
+      await app.editorArticlePage.changeArticleText(newArticleText);
+      await app.editorArticlePage.saveArticle();
 
-    await expect(await articlePage.getEditArticleButton()).toBeVisible();
-    await expect(await articlePage.getPageText(newArticleText)).toBeVisible();
-  });
+      await expect(await app.articlePage.getEditArticleButton()).toBeVisible();
+      await expect(await app.articlePage.getPageText(newArticleText)).toBeVisible();
+    });
 
-  test('удалить статью', async ({ page }) => {
-    const rootPage = new RootPage({ page });
-    const authorizePage = new AuthorizePage({ page });
-    const userProfilePage = new UserProfilePage({ page });
-    const articlePage = new ArticlePage({ page });
+    test('удалить статью', async ({ page }) => {
+      const app = new App({ page });
 
-    const { title } = await rootPage.createNewArticle();
+      await app.articlePage.deleteArticle();
 
-    await articlePage.deleteArticle();
-
-    await expect(await page.getByText('title')).not.toBeVisible();
+      await expect(await app.getPageTitle()).not.toBeVisible();
+    });
   });
 });
