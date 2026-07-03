@@ -8,6 +8,7 @@ export class SignUpPage {
     this.usernameInputName = 'Your Name';
     this.emailInputName = 'Email';
     this.passwordInputName = 'Password';
+    this.signUpLink = page.getByRole('link', { name: 'Sign up' });
     this.signUpButton = page.getByRole('button', { name: 'Sign up' });
   }
 
@@ -21,10 +22,8 @@ export class SignUpPage {
     };
 
     await this.page.goto(this.baseUrl);
-    await this.signUpButton.click();
+    await this.signUpLink.click();
     await this.signUp(user);
-    await this.profileDropdown
-      .waitFor({ state: 'visible' });
 
     return user;
   }

@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
-
+import { test } from './helpers';
 import { App } from '../pages';
 
 const newUsername = 'Updated test user';
@@ -8,15 +8,11 @@ const newArticleText = 'New text';
 let currentUser;
 
 test.describe('Authorized user can', () => {
-  test.beforeEach(async ({ page }) => {
-    const app = new App({ page });
-
+  test.beforeEach(async ({ app }) => {
     currentUser = await app.signUpPage.createUser();
   });
 
-  test('update profile data', async ({ page }) => {
-    const app = new App({ page });
-
+  test('update profile data', async ({ page, app }) => {
     await app.authorizePage.clickProfileDropdown();
     await app.authorizePage.clickProfileLink();
 
@@ -29,8 +25,7 @@ test.describe('Authorized user can', () => {
     await expect(app.authorizePage.getProfileName()).toHaveText(newUsername);
   });
 
-  test('create an article', async ({ page }) => {
-    const app = new App({ page });
+  test('create an article', async ({ page, app }) => {
     const newArticlePath = await app.authorizePage.getNewArticlePath();
 
     await app.authorizePage.clickNewArticleLink();
@@ -55,9 +50,7 @@ test.describe('Authorized user can', () => {
   });
 
   test.describe('Work with article:', () => {
-    test.beforeEach(async ({ page }) => {
-      const app = new App({ page });
-
+    test.beforeEach(async ({ page, app }) => {
       await app.authorizePage.clickNewArticleLink();
       const article = {
         title: faker.lorem.sentence(5),
@@ -68,9 +61,7 @@ test.describe('Authorized user can', () => {
       await app.createArticlePage.createNewArticle(article);
     });
 
-    test('add and remove article from favorites', async ({ page }) => {
-      const app = new App({ page });
-
+    test('add and remove article from favorites', async ({ page, app }) => {
       await app.mainPage.gotoMainPage();
 
       await app.authorizePage.openGlobalFeed();
@@ -97,9 +88,7 @@ test.describe('Authorized user can', () => {
       await deleteFromFavorites();
     });
 
-    test('edit article', async ({ page }) => {
-      const app = new App({ page });
-
+    test('edit article', async ({ page, app }) => {
       await app.articlePage.startEditArticle();
 
       await app.editorArticlePage.changeArticleText(newArticleText);
@@ -108,9 +97,7 @@ test.describe('Authorized user can', () => {
       await expect(await app.articlePage.getPageText(newArticleText)).toBeVisible();
     });
 
-    test('delete article', async ({ page }) => {
-      const app = new App({ page });
-
+    test('delete article', async ({ page, app }) => {
       await app.articlePage.deleteArticle();
 
       await expect(await app.getPageTitle()).not.toBeVisible();
