@@ -1,27 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 
-import { MainPage, CreateArticlePage, EditorArticlePage, ArticlePage, UserProfilePage, AuthorizePage, LoginPage, App } from '../pages';
+import { App } from '../pages';
 
-const username = 'My test user';
-const email = 'testUserCassiooo@example.com';
-const password = 'testPassword';
 const newUsername = 'Updated test user';
-const newArticleText = 'Новый текст';
+const newArticleText = 'New text';
+let currentUser;
 
-test.describe('Авторизованный пользователь может', () => {
+test.describe('Authorized user can', () => {
   test.beforeEach(async ({ page }) => {
     const app = new App({ page });
 
-    await app.mainPage.gotoMainPage();
-    await app.mainPage.gotoLogin();
-    await app.loginPage.signIn({
-      email,
-      password
-    });
+    currentUser = await app.signUpPage.createUser();
   });
 
-  test('изменить данные своего профиля', async ({ page }) => {
+  test('update profile data', async ({ page }) => {
     const app = new App({ page });
 
     await app.authorizePage.clickProfileDropdown();
@@ -30,23 +23,14 @@ test.describe('Авторизованный пользователь может'
     await app.authorizePage.clickEditProfileButton();
 
     await app.authorizePage.updateUsername(newUsername);
-    await app.authorizePage.updatePassword(password);
+    await app.authorizePage.updatePassword(currentUser.password);
     await app.authorizePage.saveProfileSettings();
 
-    await expect(await app.authorizePage.getProfileName()).toBe(newUsername);
-
-    await app.authorizePage.clickProfileDropdown();
-    await app.authorizePage.clickProfileLink();
-    await app.authorizePage.clickEditProfileButton();
-    await app.authorizePage.updateUsername(username);
-    await app.authorizePage.updatePassword(password);
-    await app.authorizePage.saveProfileSettings();
+    await expect(app.authorizePage.getProfileName()).toHaveText(newUsername);
   });
 
-  test('создать статью', async ({ page }) => {
+  test('create an article', async ({ page }) => {
     const app = new App({ page });
-
-    const createArticlePage = new CreateArticlePage({ page });
     const newArticlePath = await app.authorizePage.getNewArticlePath();
 
     await app.authorizePage.clickNewArticleLink();
@@ -70,7 +54,7 @@ test.describe('Авторизованный пользователь может'
     }
   });
 
-  test.describe('работать с статьей:', () => {
+  test.describe('Work with article:', () => {
     test.beforeEach(async ({ page }) => {
       const app = new App({ page });
 
@@ -84,7 +68,7 @@ test.describe('Авторизованный пользователь может'
       await app.createArticlePage.createNewArticle(article);
     });
 
-    test('добавить и удалить статью из Избранного', async ({ page }) => {
+    test('add and remove article from favorites', async ({ page }) => {
       const app = new App({ page });
 
       await app.mainPage.gotoMainPage();
@@ -113,19 +97,18 @@ test.describe('Авторизованный пользователь может'
       await deleteFromFavorites();
     });
 
-    test('изменить статью', async ({ page }) => {
+    test('edit article', async ({ page }) => {
       const app = new App({ page });
 
       await app.articlePage.startEditArticle();
 
       await app.editorArticlePage.changeArticleText(newArticleText);
-      await app.editorArticlePage.saveArticle();
 
       await expect(await app.articlePage.getEditArticleButton()).toBeVisible();
       await expect(await app.articlePage.getPageText(newArticleText)).toBeVisible();
     });
 
-    test('удалить статью', async ({ page }) => {
+    test('delete article', async ({ page }) => {
       const app = new App({ page });
 
       await app.articlePage.deleteArticle();

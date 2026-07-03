@@ -4,8 +4,8 @@ import { ArticlePage } from './articlePage';
 import { UserProfilePage } from './userProfilePage';
 import { AuthorizePage } from './authorizePage';
 import { LoginPage } from './loginPage';
+import { SignUpPage } from './signUpPage';
 import { EditorArticlePage } from './editorArticlePage';
-import { faker } from '@faker-js/faker';
 
 export class App {
   constructor({ page }) {
@@ -14,8 +14,8 @@ export class App {
     this.articlePage = new ArticlePage({ page });
     this.createArticlePage = new CreateArticlePage({ page });
     this.editorArticlePage = new EditorArticlePage({ page });
-    this.articlePage = new ArticlePage({ page });
     this.loginPage = new LoginPage({ page });
+    this.signUpPage = new SignUpPage({ page });
     this.userProfilePage = new UserProfilePage({ page });
 
     this.pageTitle = page.getByText('title');

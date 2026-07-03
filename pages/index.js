@@ -12,4 +12,6 @@ export { AuthorizePage } from './authorizePage';
 
 export { LoginPage } from './loginPage';
 
+export { SignUpPage } from './signUpPage';
+
 export { App } from './app';

@@ -20,6 +20,10 @@ export class MainPage {
     await this.loginLink.click();
   };
 
+  async gotoSignUp() {
+    await this.signUpLink.click();
+  }
+
   async getFirstArticlePath() {
     return this.articlePreviewLinks.first().getAttribute('href');
   }

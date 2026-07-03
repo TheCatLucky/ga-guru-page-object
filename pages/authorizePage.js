@@ -33,8 +33,8 @@ export class AuthorizePage extends MainPage {
     await this.updateSettingButton.click();
   }
 
-  async getProfileName() {
-    return this.profileName.textContent();
+  getProfileName() {
+    return this.profileName;
   }
 
   async clickProfileDropdown() {

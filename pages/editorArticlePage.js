@@ -7,9 +7,6 @@ export class EditorArticlePage {
 
   async changeArticleText(newText) {
     await this.articleTextbox.fill(newText);
-  };
-
-  async saveArticle() {
     await this.updateArticleButton.click();
   }
 }
